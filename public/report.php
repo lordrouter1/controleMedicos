@@ -4,8 +4,7 @@ require_once __DIR__ . '/../lib/fpdf.php';
 
 $selectedMonth = $_GET['month'] ?? (new DateTime())->format('Y-m');
 $monthDate = DateTime::createFromFormat('Y-m', $selectedMonth) ?: new DateTime('first day of this month');
-$formatter = new IntlDateFormatter('pt_BR', IntlDateFormatter::LONG, IntlDateFormatter::NONE, 'America/Sao_Paulo', IntlDateFormatter::GREGORIAN, "LLLL 'de' yyyy");
-$monthLabel = ucfirst($formatter->format($monthDate));
+$monthLabel = format_month_label($monthDate);
 
 $professionals = fetch_professionals_with_hours($selectedMonth);
 

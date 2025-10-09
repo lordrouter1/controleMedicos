@@ -226,22 +226,37 @@ function get_month_options(int $months = 6): array
     $options = [];
     $current = new DateTime('first day of this month');
 
-    $useIntl = class_exists('IntlDateFormatter');
-    $formatter = null;
-    if ($useIntl) {
+    for ($i = 0; $i < $months; $i++) {
+        $monthKey = $current->format('Y-m');
+        $options[$monthKey] = format_month_label($current, includePreposition: false);
+        $current->modify('-1 month');
+    }
+
+    return $options;
+}
+
+function format_month_label(DateTime $date, bool $includePreposition = true): string
+{
+    if (class_exists('IntlDateFormatter')) {
+        $pattern = $includePreposition ? "LLLL 'de' yyyy" : 'LLLL/yyyy';
         $formatter = new IntlDateFormatter(
             'pt_BR',
             IntlDateFormatter::LONG,
             IntlDateFormatter::NONE,
             'America/Sao_Paulo',
             IntlDateFormatter::GREGORIAN,
-            'LLLL/yyyy'
+            $pattern
         );
-    } else {
-        setlocale(LC_TIME, 'pt_BR.UTF-8', 'pt_BR', 'Portuguese_Brazil');
+
+        if ($formatter instanceof IntlDateFormatter) {
+            $label = $formatter->format($date);
+            if ($label !== false) {
+                return ucfirst($label);
+            }
+        }
     }
 
-    $manualMonths = [
+    static $manualMonths = [
         1 => 'janeiro',
         2 => 'fevereiro',
         3 => 'março',
@@ -256,19 +271,9 @@ function get_month_options(int $months = 6): array
         12 => 'dezembro',
     ];
 
-    for ($i = 0; $i < $months; $i++) {
-        $monthKey = $current->format('Y-m');
+    $monthNumber = (int)$date->format('n');
+    $connector = $includePreposition ? ' de ' : ' ';
+    $label = sprintf('%s%s%s', $manualMonths[$monthNumber] ?? '', $connector, $date->format('Y'));
 
-        if ($useIntl && $formatter instanceof IntlDateFormatter) {
-            $label = $formatter->format($current);
-        } else {
-            $monthNumber = (int)$current->format('n');
-            $label = sprintf('%s %s', $manualMonths[$monthNumber], $current->format('Y'));
-        }
-
-        $options[$monthKey] = ucfirst($label);
-        $current->modify('-1 month');
-    }
-
-    return $options;
+    return ucfirst(trim($label));
 }
