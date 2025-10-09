@@ -6,6 +6,9 @@ require_once __DIR__ . '/../config/db.php';
  */
 function fetch_professionals_with_hours(string $selectedMonth): array
 {
+    [, $monthEnd] = get_month_date_range($selectedMonth);
+    $monthEndFormatted = $monthEnd->format('Y-m-d');
+
     $mysqli = get_db_connection();
 
     $sql = "SELECT p.id, p.name, p.company, p.workload_hours, p.cbo, p.hourly_rate, p.unit,
@@ -14,6 +17,7 @@ function fetch_professionals_with_hours(string $selectedMonth): array
             FROM professionals p
             LEFT JOIN professional_observations o
               ON o.professional_id = p.id AND o.observation_month = ?
+            WHERE p.entry_date <= ?
             GROUP BY p.id
             ORDER BY p.name";
 
@@ -22,7 +26,7 @@ function fetch_professionals_with_hours(string $selectedMonth): array
         throw new RuntimeException('Erro ao preparar consulta: ' . $mysqli->error);
     }
 
-    $stmt->bind_param('s', $selectedMonth);
+    $stmt->bind_param('ss', $selectedMonth, $monthEndFormatted);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -73,10 +77,19 @@ function fetch_payment_status(int $professionalId, string $selectedMonth, ?mysql
 
 function add_professional(array $data): void
 {
+    $entryDate = DateTime::createFromFormat('Y-m-d', $data['entry_date'] ?? '');
+    $dateErrors = DateTime::getLastErrors();
+
+    if (!$entryDate || ($dateErrors['warning_count'] ?? 0) > 0 || ($dateErrors['error_count'] ?? 0) > 0) {
+        throw new RuntimeException('Data de entrada inválida.');
+    }
+
+    $entryDateFormatted = $entryDate->format('Y-m-d');
+
     $mysqli = get_db_connection();
 
-    $sql = "INSERT INTO professionals (name, company, workload_hours, cbo, hourly_rate, unit)
-            VALUES (?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO professionals (name, company, workload_hours, cbo, hourly_rate, unit, entry_date)
+            VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $mysqli->prepare($sql);
     if (!$stmt) {
@@ -84,13 +97,14 @@ function add_professional(array $data): void
     }
 
     $stmt->bind_param(
-        'ssdsds',
+        'ssdsdss',
         $data['name'],
         $data['company'],
         $data['workload_hours'],
         $data['cbo'],
         $data['hourly_rate'],
-        $data['unit']
+        $data['unit'],
+        $entryDateFormatted
     );
 
     if (!$stmt->execute()) {
@@ -101,20 +115,43 @@ function add_professional(array $data): void
     $mysqli->close();
 }
 
-function fetch_all_professionals(): array
+function fetch_all_professionals(?string $selectedMonth = null): array
 {
     $mysqli = get_db_connection();
 
-    $sql = "SELECT id, name, company, workload_hours, cbo, hourly_rate, unit
-            FROM professionals
-            ORDER BY name";
+    $sql = "SELECT id, name, company, workload_hours, cbo, hourly_rate, unit, entry_date
+            FROM professionals";
 
-    $result = $mysqli->query($sql);
-    if ($result === false) {
-        throw new RuntimeException('Erro ao buscar profissionais: ' . $mysqli->error);
+    $params = [];
+    $types = '';
+
+    if ($selectedMonth !== null) {
+        [, $monthEnd] = get_month_date_range($selectedMonth);
+        $sql .= " WHERE entry_date <= ?";
+        $params[] = $monthEnd->format('Y-m-d');
+        $types .= 's';
     }
 
-    $professionals = $result->fetch_all(MYSQLI_ASSOC);
+    $sql .= " ORDER BY name";
+
+    if (!empty($params)) {
+        $stmt = $mysqli->prepare($sql);
+        if (!$stmt) {
+            throw new RuntimeException('Erro ao preparar consulta: ' . $mysqli->error);
+        }
+
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $professionals = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+    } else {
+        $result = $mysqli->query($sql);
+        if ($result === false) {
+            throw new RuntimeException('Erro ao buscar profissionais: ' . $mysqli->error);
+        }
+        $professionals = $result->fetch_all(MYSQLI_ASSOC);
+    }
 
     $mysqli->close();
 
@@ -168,19 +205,23 @@ function update_payment_status(int $professionalId, string $selectedMonth, bool 
 
 function fetch_observations(int $professionalId, string $selectedMonth): array
 {
+    [, $monthEnd] = get_month_date_range($selectedMonth);
+    $monthEndFormatted = $monthEnd->format('Y-m-d');
+
     $mysqli = get_db_connection();
 
-    $sql = "SELECT id, observation, hour_change, created_at
-            FROM professional_observations
-            WHERE professional_id = ? AND observation_month = ?
-            ORDER BY created_at DESC";
+    $sql = "SELECT o.id, o.observation, o.hour_change, o.created_at
+            FROM professional_observations o
+            INNER JOIN professionals p ON p.id = o.professional_id
+            WHERE o.professional_id = ? AND o.observation_month = ? AND p.entry_date <= ?
+            ORDER BY o.created_at DESC";
 
     $stmt = $mysqli->prepare($sql);
     if (!$stmt) {
         throw new RuntimeException('Erro ao preparar consulta: ' . $mysqli->error);
     }
 
-    $stmt->bind_param('is', $professionalId, $selectedMonth);
+    $stmt->bind_param('iss', $professionalId, $selectedMonth, $monthEndFormatted);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -194,12 +235,15 @@ function fetch_observations(int $professionalId, string $selectedMonth): array
 
 function fetch_recent_observations(string $selectedMonth, int $limit = 10): array
 {
+    [, $monthEnd] = get_month_date_range($selectedMonth);
+    $monthEndFormatted = $monthEnd->format('Y-m-d');
+
     $mysqli = get_db_connection();
 
     $sql = "SELECT o.id, o.observation, o.hour_change, o.created_at, p.name AS professional_name
             FROM professional_observations o
             INNER JOIN professionals p ON p.id = o.professional_id
-            WHERE o.observation_month = ?
+            WHERE o.observation_month = ? AND p.entry_date <= ?
             ORDER BY o.created_at DESC
             LIMIT ?";
 
@@ -208,7 +252,7 @@ function fetch_recent_observations(string $selectedMonth, int $limit = 10): arra
         throw new RuntimeException('Erro ao preparar consulta: ' . $mysqli->error);
     }
 
-    $stmt->bind_param('si', $selectedMonth, $limit);
+    $stmt->bind_param('ssi', $selectedMonth, $monthEndFormatted, $limit);
     $stmt->execute();
 
     $result = $stmt->get_result();
@@ -233,6 +277,22 @@ function get_month_options(int $months = 6): array
     }
 
     return $options;
+}
+
+function get_month_date_range(string $month): array
+{
+    $date = DateTime::createFromFormat('Y-m', $month);
+    $errors = DateTime::getLastErrors();
+
+    if (!$date || ($errors['warning_count'] ?? 0) > 0 || ($errors['error_count'] ?? 0) > 0) {
+        throw new InvalidArgumentException('Mês de referência inválido.');
+    }
+
+    $start = (clone $date)->setTime(0, 0, 0);
+    $start->setDate((int)$date->format('Y'), (int)$date->format('m'), 1);
+    $end = (clone $start)->modify('last day of this month');
+
+    return [$start, $end];
 }
 
 function format_month_label(DateTime $date, bool $includePreposition = true): string

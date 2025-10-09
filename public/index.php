@@ -54,10 +54,6 @@ foreach ($professionals as $professional) {
 }
 
 $pendingCount = $totalProfessionals - $paidCount;
-$currentMonthLabel = $monthOptions[$selectedMonth] ?? '';
-$currentMonthDescription = function_exists('mb_strtolower')
-    ? mb_strtolower($currentMonthLabel, 'UTF-8')
-    : strtolower($currentMonthLabel);
 ?>
 <!doctype html>
 <html lang="pt-BR">
@@ -66,6 +62,7 @@ $currentMonthDescription = function_exists('mb_strtolower')
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Controle de Carga Horária - Associação</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
@@ -92,28 +89,19 @@ $currentMonthDescription = function_exists('mb_strtolower')
 </nav>
 <div class="container pb-5">
     <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-between gap-3 mb-4">
-        <div>
-            <h1 class="h3 mb-1">Resumo mensal</h1>
-            <p class="text-muted mb-0">Acompanhamento de cargas horárias e pagamentos referentes a <?= htmlspecialchars($currentMonthDescription) ?>.</p>
-        </div>
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-auto">
+                <label for="month" class="form-label small text-muted mb-1">Mês de referência</label>
+                <select class="form-select" id="month" name="month" onchange="this.form.submit()">
+                    <?php foreach ($monthOptions as $value => $label): ?>
+                        <option value="<?= htmlspecialchars($value) ?>" <?= $value === $selectedMonth ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($label) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </form>
         <a class="btn btn-outline-primary" href="report.php?month=<?= htmlspecialchars($selectedMonth) ?>" target="_blank">Gerar relatório PDF</a>
-    </div>
-
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body">
-            <form method="get" class="row g-3 align-items-end">
-                <div class="col-sm-6 col-md-4 col-lg-3">
-                    <label for="month" class="form-label">Mês de referência</label>
-                    <select class="form-select" id="month" name="month" onchange="this.form.submit()">
-                        <?php foreach ($monthOptions as $value => $label): ?>
-                            <option value="<?= htmlspecialchars($value) ?>" <?= $value === $selectedMonth ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($label) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            </form>
-        </div>
     </div>
 
     <?php foreach ($alerts as $alert): ?>
@@ -165,10 +153,7 @@ $currentMonthDescription = function_exists('mb_strtolower')
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white py-3">
             <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between gap-2">
-                <div>
-                    <h5 class="card-title mb-0">Profissionais cadastrados</h5>
-                    <small class="text-muted">Controle de horas do período selecionado</small>
-                </div>
+                <div class="fw-semibold">Profissionais cadastrados</div>
                 <div class="text-md-end">
                     <span class="badge bg-success-subtle text-success me-2">Pago</span>
                     <span class="badge bg-warning-subtle text-warning">Pendente</span>
@@ -199,7 +184,8 @@ $currentMonthDescription = function_exists('mb_strtolower')
                     </tr>
                 <?php else: ?>
                     <?php foreach ($professionals as $professional): ?>
-                        <tr>
+                        <?php $isPaid = $professional['payment_status'] === 'pago'; ?>
+                        <tr class="<?= $isPaid ? 'table-success table-paid' : '' ?>">
                             <td class="fw-semibold"><?= htmlspecialchars($professional['name']) ?></td>
                             <td><?= htmlspecialchars($professional['company']) ?></td>
                             <td><?= htmlspecialchars($professional['unit']) ?></td>
@@ -218,7 +204,7 @@ $currentMonthDescription = function_exists('mb_strtolower')
                                                name="is_paid" <?= $professional['payment_status'] === 'pago' ? 'checked' : '' ?>
                                                onchange="this.form.submit()">
                                         <label class="form-check-label small" for="paidSwitch<?= (int)$professional['id'] ?>">
-                                            <?= $professional['payment_status'] === 'pago' ? 'Pago' : 'Pendente' ?>
+                                            <?= $isPaid ? 'Pago' : 'Pendente' ?>
                                         </label>
                                     </div>
                                 </form>

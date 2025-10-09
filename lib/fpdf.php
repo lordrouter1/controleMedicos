@@ -508,12 +508,14 @@ class FPDF
             return;
         }
         $this->fontsLoaded[$font] = true;
-        $family = preg_replace('/[^a-z0-9]/', '', $font);
+        $fontKey = strtolower($font);
+        $family = preg_replace('/[^a-z0-9]/', '', $fontKey);
         $name = __DIR__.'/font/'.$family.'.php';
         if (!file_exists($name)) {
-            if (in_array($font, ['helvetica', 'helveticab', 'helveticai', 'helveticabi', 'times', 'timesb', 'timesi', 'timesbi', 'courier', 'courierb', 'courieri', 'courierbi', 'symbol', 'zapfdingbats'])) {
-                $cw = $this->_core_cw($font);
-                $this->fonts[$font] = ['i'=>count($this->fonts)+1, 'type'=>'core', 'name'=>strtoupper($font), 'cw'=>$cw];
+            $coreFonts = ['helvetica', 'helveticab', 'helveticai', 'helveticabi', 'times', 'timesb', 'timesi', 'timesbi', 'courier', 'courierb', 'courieri', 'courierbi', 'symbol', 'zapfdingbats'];
+            if (in_array($fontKey, $coreFonts, true)) {
+                $cw = $this->_core_cw($fontKey);
+                $this->fonts[$font] = ['i'=>count($this->fonts)+1, 'type'=>'core', 'name'=>strtoupper($fontKey), 'cw'=>$cw];
                 return;
             }
             $this->Error('Font file not found: '.$name);

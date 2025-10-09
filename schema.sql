@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS professionals (
     cbo VARCHAR(20) NOT NULL,
     hourly_rate DECIMAL(10,2) NOT NULL DEFAULT 0,
     unit VARCHAR(150) NOT NULL,
+    entry_date DATE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

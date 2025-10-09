@@ -17,13 +17,6 @@ $currentMonthDescription = function_exists('mb_strtolower')
     ? mb_strtolower($currentMonthLabel, 'UTF-8')
     : strtolower($currentMonthLabel);
 
-try {
-    $professionals = fetch_all_professionals();
-} catch (Throwable $exception) {
-    $alerts[] = ['type' => 'danger', 'message' => $exception->getMessage()];
-    $professionals = [];
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $observationMonth = $_POST['observation_month'] ?? $selectedMonth;
     if (!isset($monthOptions[$observationMonth])) {
@@ -52,6 +45,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 try {
+    $professionals = fetch_all_professionals($selectedMonth);
+} catch (Throwable $exception) {
+    $alerts[] = ['type' => 'danger', 'message' => $exception->getMessage()];
+    $professionals = [];
+}
+
+try {
     $recentObservations = fetch_recent_observations($selectedMonth, 15);
 } catch (Throwable $exception) {
     $alerts[] = ['type' => 'danger', 'message' => $exception->getMessage()];
@@ -65,6 +65,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Registro de Horas - Controle de Médicos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/theme.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
@@ -91,10 +92,6 @@ try {
 </nav>
 <div class="container pb-5">
     <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-between gap-3 mb-4">
-        <div>
-            <h1 class="h3 mb-1">Registro de horas</h1>
-            <p class="text-muted mb-0">Lance observações, horas extras e ausências para manter o histórico mensal atualizado.</p>
-        </div>
         <form method="get" class="row g-2 align-items-end">
             <div class="col-auto">
                 <label for="month" class="form-label mb-0 small text-muted">Mês de referência</label>
