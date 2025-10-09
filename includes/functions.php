@@ -176,11 +176,48 @@ function get_month_options(): array
 {
     $months = [];
     $current = new DateTime('first day of this month');
-    $formatter = new IntlDateFormatter('pt_BR', IntlDateFormatter::LONG, IntlDateFormatter::NONE, 'America/Sao_Paulo', IntlDateFormatter::GREGORIAN, 'LLLL/yyyy');
+
+    $useIntl = class_exists('IntlDateFormatter');
+    $formatter = null;
+    if ($useIntl) {
+        $formatter = new IntlDateFormatter(
+            'pt_BR',
+            IntlDateFormatter::LONG,
+            IntlDateFormatter::NONE,
+            'America/Sao_Paulo',
+            IntlDateFormatter::GREGORIAN,
+            'LLLL/yyyy'
+        );
+    } else {
+        setlocale(LC_TIME, 'pt_BR.UTF-8', 'pt_BR', 'Portuguese_Brazil');
+    }
+
+    $manualMonths = [
+        1 => 'janeiro',
+        2 => 'fevereiro',
+        3 => 'março',
+        4 => 'abril',
+        5 => 'maio',
+        6 => 'junho',
+        7 => 'julho',
+        8 => 'agosto',
+        9 => 'setembro',
+        10 => 'outubro',
+        11 => 'novembro',
+        12 => 'dezembro',
+    ];
 
     for ($i = 0; $i < 12; $i++) {
         $monthKey = $current->format('Y-m');
-        $months[$monthKey] = $formatter->format($current);
+
+        if ($useIntl && $formatter instanceof IntlDateFormatter) {
+            $label = $formatter->format($current);
+        } else {
+            $monthNumber = (int)$current->format('n');
+            $label = sprintf('%s/%s', $manualMonths[$monthNumber], $current->format('Y'));
+        }
+
+        $months[$monthKey] = $label;
         $current->modify('-1 month');
     }
 
