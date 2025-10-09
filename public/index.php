@@ -101,7 +101,7 @@ $pendingCount = $totalProfessionals - $paidCount;
                 </select>
             </div>
         </form>
-        <a class="btn btn-outline-primary" href="report.php?month=<?= htmlspecialchars($selectedMonth) ?>" target="_blank">Gerar relatório PDF</a>
+        <a class="btn btn-outline-primary" href="report.php?month=<?= htmlspecialchars($selectedMonth) ?>" target="_blank">Imprimir relatório</a>
     </div>
 
     <?php foreach ($alerts as $alert): ?>

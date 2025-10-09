@@ -30,13 +30,12 @@ Aplicação web desenvolvida em PHP com MySQL para controle de carga horária de
 - Registro de observações mensais com possibilidade de adicionar ou remover horas (extras/faltas).
 - Controle mensal de pagamento do contrato (pago/pendente) por profissional.
 - Listagem dos profissionais com resumo de carga horária base, horas extras, faltas e total consolidado.
-- Geração de relatório em PDF com todas as informações essenciais.
+- Geração de relatório imprimível com todas as informações essenciais.
 
 ## Geração do Relatório
 
-Na página principal existe um botão "Gerar Relatório PDF" que produz um documento com a listagem dos profissionais, suas unidades, especialidades (CBO), horas base, extras, faltas e total consolidado para o mês selecionado.
+Na página principal existe um botão "Imprimir Relatório" que abre uma nova aba com o resumo dos profissionais, suas unidades, especialidades (CBO), horas base, extras, faltas e total consolidado para o mês selecionado. A interface já aciona a janela de impressão do navegador para facilitar a geração de PDF ou o envio direto para impressora.
 
 ## Observações
 
 - O arquivo `config/db.php` utiliza variáveis de ambiente (`DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`) caso disponíveis.
-- O relatório PDF utiliza uma versão simplificada da biblioteca [FPDF](http://www.fpdf.org/), disponibilizada em `lib/fpdf.php`.
