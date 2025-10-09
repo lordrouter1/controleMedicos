@@ -1,0 +1,94 @@
+:root {
+    --bs-primary: #1f3c88;
+    --bs-primary-rgb: 31, 60, 136;
+    --bs-secondary: #0f1c2e;
+    --bs-success: #2d8a6d;
+    --bs-success-rgb: 45, 138, 109;
+    --bs-warning: #e6a23c;
+    --bs-warning-rgb: 230, 162, 60;
+    --bs-info: #0f7a9b;
+    --bs-body-color: #2f3747;
+    --bs-body-bg: #f5f6fa;
+    --bs-border-color: #d9deeb;
+}
+
+body.bg-light {
+    background-color: var(--bs-body-bg) !important;
+}
+
+.navbar {
+    border-radius: 0 0 1rem 1rem;
+}
+
+.navbar .navbar-brand {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.card {
+    border-color: rgba(31, 60, 136, 0.08);
+    border-radius: 1rem;
+}
+
+.card-header {
+    border-bottom-color: rgba(31, 60, 136, 0.08);
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.btn-primary:hover {
+    background-color: #173271;
+    border-color: #173271;
+}
+
+.btn-outline-primary {
+    color: var(--bs-primary);
+    border-color: rgba(31, 60, 136, 0.35);
+}
+
+.btn-outline-primary:hover {
+    background-color: rgba(31, 60, 136, 0.1);
+    border-color: var(--bs-primary);
+}
+
+.form-check-input:checked {
+    background-color: var(--bs-success);
+    border-color: var(--bs-success);
+}
+
+.table-paid {
+    --bs-table-bg: rgba(45, 138, 109, 0.12);
+    --bs-table-striped-bg: rgba(45, 138, 109, 0.12);
+    --bs-table-hover-bg: rgba(45, 138, 109, 0.18);
+}
+
+.badge.bg-success-subtle {
+    color: var(--bs-success);
+    background-color: rgba(45, 138, 109, 0.15) !important;
+}
+
+.badge.bg-warning-subtle {
+    color: var(--bs-warning);
+    background-color: rgba(230, 162, 60, 0.18) !important;
+}
+
+.table thead th {
+    border-bottom: none;
+}
+
+.table > :not(caption) > * > * {
+    border-bottom-color: rgba(15, 28, 46, 0.06);
+}
+
+select.form-select:focus,
+input.form-control:focus,
+textarea.form-control:focus {
+    border-color: rgba(31, 60, 136, 0.6);
+    box-shadow: 0 0 0 0.25rem rgba(31, 60, 136, 0.15);
+}
