@@ -11,12 +11,12 @@ Aplicação web desenvolvida em PHP com MySQL para controle de carga horária de
 ## Instalação
 
 1. Clone o repositório e acesse a pasta do projeto.
-2. Crie o banco de dados executando o script `schema.sql` no MySQL:
+2. Crie o banco de dados executando o script `schema.sql` no MySQL (ele também cria usuários `controle_app` e `controle_admin` com as permissões necessárias; ajuste as senhas no script conforme necessidade):
 
    ```sql
    SOURCE schema.sql;
    ```
-3. Ajuste as credenciais de banco no arquivo `config/db.php` caso necessário.
+3. Ajuste as credenciais de banco no arquivo `config/db.php` caso necessário, preferencialmente utilizando o usuário `controle_app` criado pelo script.
 4. Inicie o servidor embutido do PHP apontando para a pasta `public`:
 
    ```bash

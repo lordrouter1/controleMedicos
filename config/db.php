@@ -4,8 +4,8 @@
 
 define('DB_HOST', getenv('DB_HOST') ?: '127.0.0.1');
 define('DB_NAME', getenv('DB_NAME') ?: 'controle_medicos');
-define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('DB_PASS') ?: '');
+define('DB_USER', getenv('DB_USER') ?: 'controle_app');
+define('DB_PASS', getenv('DB_PASS') ?: 'controle_app_password');
 define('DB_CHARSET', 'utf8mb4');
 
 function get_db_connection(): mysqli

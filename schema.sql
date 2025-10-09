@@ -1,6 +1,18 @@
 CREATE DATABASE IF NOT EXISTS controle_medicos CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE controle_medicos;
 
+-- Usuário de aplicação com permissões restritas ao banco
+CREATE USER IF NOT EXISTS 'controle_app'@'localhost' IDENTIFIED BY 'controle_app_password';
+CREATE USER IF NOT EXISTS 'controle_app'@'%' IDENTIFIED BY 'controle_app_password';
+GRANT SELECT, INSERT, UPDATE, DELETE ON controle_medicos.* TO 'controle_app'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON controle_medicos.* TO 'controle_app'@'%';
+
+-- Usuário administrador opcional para manutenção com privilégios completos no schema
+CREATE USER IF NOT EXISTS 'controle_admin'@'localhost' IDENTIFIED BY 'controle_admin_password';
+GRANT ALL PRIVILEGES ON controle_medicos.* TO 'controle_admin'@'localhost' WITH GRANT OPTION;
+
+FLUSH PRIVILEGES;
+
 CREATE TABLE IF NOT EXISTS professionals (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
