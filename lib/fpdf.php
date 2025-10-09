@@ -314,6 +314,16 @@ class FPDF
         }
     }
 
+    function Ln($h=null)
+    {
+        $this->x = $this->lMargin;
+        if ($h===null) {
+            $this->y += $this->lasth;
+        } else {
+            $this->y += $h;
+        }
+    }
+
     function Line($x1, $y1, $x2, $y2)
     {
         $this->_out(sprintf('%.2F %.2F m %.2F %.2F l S', $x1*$this->k, ($this->h-$y1)*$this->k, $x2*$this->k, ($this->h-$y2)*$this->k));
