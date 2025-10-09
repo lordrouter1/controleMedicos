@@ -101,6 +101,26 @@ function add_professional(array $data): void
     $mysqli->close();
 }
 
+function fetch_all_professionals(): array
+{
+    $mysqli = get_db_connection();
+
+    $sql = "SELECT id, name, company, workload_hours, cbo, hourly_rate, unit
+            FROM professionals
+            ORDER BY name";
+
+    $result = $mysqli->query($sql);
+    if ($result === false) {
+        throw new RuntimeException('Erro ao buscar profissionais: ' . $mysqli->error);
+    }
+
+    $professionals = $result->fetch_all(MYSQLI_ASSOC);
+
+    $mysqli->close();
+
+    return $professionals;
+}
+
 function add_observation(array $data): void
 {
     $mysqli = get_db_connection();
@@ -172,9 +192,38 @@ function fetch_observations(int $professionalId, string $selectedMonth): array
     return $observations;
 }
 
-function get_month_options(): array
+function fetch_recent_observations(string $selectedMonth, int $limit = 10): array
 {
-    $months = [];
+    $mysqli = get_db_connection();
+
+    $sql = "SELECT o.id, o.observation, o.hour_change, o.created_at, p.name AS professional_name
+            FROM professional_observations o
+            INNER JOIN professionals p ON p.id = o.professional_id
+            WHERE o.observation_month = ?
+            ORDER BY o.created_at DESC
+            LIMIT ?";
+
+    $stmt = $mysqli->prepare($sql);
+    if (!$stmt) {
+        throw new RuntimeException('Erro ao preparar consulta: ' . $mysqli->error);
+    }
+
+    $stmt->bind_param('si', $selectedMonth, $limit);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+    $observations = $result->fetch_all(MYSQLI_ASSOC);
+
+    $stmt->close();
+    $mysqli->close();
+
+    return $observations;
+}
+
+function get_month_options(int $months = 6): array
+{
+    $months = max(1, $months);
+    $options = [];
     $current = new DateTime('first day of this month');
 
     $useIntl = class_exists('IntlDateFormatter');
@@ -207,19 +256,19 @@ function get_month_options(): array
         12 => 'dezembro',
     ];
 
-    for ($i = 0; $i < 12; $i++) {
+    for ($i = 0; $i < $months; $i++) {
         $monthKey = $current->format('Y-m');
 
         if ($useIntl && $formatter instanceof IntlDateFormatter) {
             $label = $formatter->format($current);
         } else {
             $monthNumber = (int)$current->format('n');
-            $label = sprintf('%s/%s', $manualMonths[$monthNumber], $current->format('Y'));
+            $label = sprintf('%s %s', $manualMonths[$monthNumber], $current->format('Y'));
         }
 
-        $months[$monthKey] = $label;
+        $options[$monthKey] = ucfirst($label);
         $current->modify('-1 month');
     }
 
-    return $months;
+    return $options;
 }
