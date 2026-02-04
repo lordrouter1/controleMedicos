@@ -63,48 +63,28 @@ foreach ($professionals as $professional) {
             }
             .report-container {
                 padding-top: 0;
+                zoom: .9;
             }
             a[href]:after {
                 display: none;
+            }
+            .no-print{
+                display: none !important;
             }
         }
     </style>
 </head>
 <body>
 <div class="report-container">
-    <div class="print-actions d-flex justify-content-end gap-2">
+    <div class="print-actions d-flex justify-content-end gap-2 no-print">
         <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.close()">Fechar</button>
         <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">Imprimir</button>
     </div>
     <header class="mb-4 border-bottom pb-3">
-        <h1 class="h4 mb-1">Associação dos Profissionais de Saúde</h1>
+        <h1 class="h4 mb-1">ASSOCIACAO GUAPORE PRO-SAUDE</h1>
         <p class="report-meta text-muted mb-0">Relatório de carga horária &middot; Referência <?= htmlspecialchars($monthLabel) ?></p>
         <small class="text-muted">Gerado em <?= (new DateTime())->format('d/m/Y H:i') ?></small>
     </header>
-
-    <section class="mb-4">
-        <div class="row g-3">
-            <div class="col-sm-4">
-                <div class="border rounded-3 p-3 h-100 bg-light-subtle">
-                    <p class="text-muted mb-1">Profissionais listados</p>
-                    <p class="fs-4 fw-semibold mb-0"><?= count($professionals) ?></p>
-                </div>
-            </div>
-            <div class="col-sm-4">
-                <div class="border rounded-3 p-3 h-100 bg-light-subtle">
-                    <p class="text-muted mb-1">Horas extras</p>
-                    <p class="fs-5 fw-semibold text-success mb-0">+<?= number_format($totalExtra, 2, ',', '.') ?> h</p>
-                </div>
-            </div>
-            <div class="col-sm-4">
-                <div class="border rounded-3 p-3 h-100 bg-light-subtle">
-                    <p class="text-muted mb-1">Saldo total</p>
-                    <p class="fs-5 fw-semibold mb-0"><?= number_format($totalHours, 2, ',', '.') ?> h</p>
-                    <small class="text-muted">Horas extras - faltantes (<?= number_format($totalMissing, 2, ',', '.') ?> h em faltas)</small>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <section>
         <div class="table-responsive">
@@ -112,12 +92,10 @@ foreach ($professionals as $professional) {
                 <thead>
                 <tr>
                     <th>Profissional</th>
-                    <th>Empresa</th>
                     <th>Unidade</th>
                     <th>CBO</th>
                     <th class="text-end">Carga base</th>
-                    <th class="text-end">Horas extras</th>
-                    <th class="text-end">Horas faltas</th>
+                    <th class="text-end">Horas</th>
                     <th class="text-end">Total</th>
                 </tr>
                 </thead>
@@ -131,14 +109,19 @@ foreach ($professionals as $professional) {
                         <tr>
                             <td>
                                 <div class="fw-semibold"><?= htmlspecialchars($professional['name']) ?></div>
-                                <div class="small text-muted">Valor hora: R$ <?= number_format((float)$professional['hourly_rate'], 2, ',', '.') ?></div>
+                                <div class="small text-muted"><?= htmlspecialchars($professional['company']) ?></div>
+                                <div class="small text-muted">Valor Total: R$ <?= number_format(((float)$professional['hourly_rate']) * ((float)$professional['total_hours']), 2, ',', '.') ?></div>
                             </td>
-                            <td><?= htmlspecialchars($professional['company']) ?></td>
                             <td><?= htmlspecialchars($professional['unit']) ?></td>
                             <td><?= htmlspecialchars($professional['cbo']) ?></td>
-                            <td class="text-end"><?= number_format((float)$professional['workload_hours'], 2, ',', '.') ?> h</td>
-                            <td class="text-end text-success">+<?= number_format((float)$professional['extra_hours'], 2, ',', '.') ?> h</td>
-                            <td class="text-end text-danger">-<?= number_format(abs((float)$professional['missing_hours']), 2, ',', '.') ?> h</td>
+                            <td class="text-end">
+                                <div><?= number_format((float)$professional['workload_hours'], 2, ',', '.') ?> h</div>
+                                <div class="small text-muted">R$ <?= number_format(((float)$professional['hourly_rate']), 2, ',', '.') ?>/h</div>
+                            </td>
+                            <td class="text-end">
+                                <div class="text-success">+<?= number_format((float)$professional['extra_hours'], 2, ',', '.') ?> h</div>
+                                <div class="text-danger">-<?= number_format(abs((float)$professional['missing_hours']), 2, ',', '.') ?> h</div>
+                            </td>
                             <td class="text-end fw-semibold"><?= number_format((float)$professional['total_hours'], 2, ',', '.') ?> h</td>
                         </tr>
                     <?php endforeach; ?>

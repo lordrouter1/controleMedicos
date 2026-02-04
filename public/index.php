@@ -104,13 +104,6 @@ $pendingCount = $totalProfessionals - $paidCount;
         <a class="btn btn-outline-primary" href="report.php?month=<?= htmlspecialchars($selectedMonth) ?>" target="_blank">Imprimir relatório</a>
     </div>
 
-    <?php foreach ($alerts as $alert): ?>
-        <div class="alert alert-<?= htmlspecialchars($alert['type']) ?> alert-dismissible fade show" role="alert">
-            <?= htmlspecialchars($alert['message']) ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
-        </div>
-    <?php endforeach; ?>
-
     <div class="row g-3 mb-4">
         <div class="col-sm-6 col-xl-3">
             <div class="card border-0 shadow-sm h-100">
@@ -154,25 +147,18 @@ $pendingCount = $totalProfessionals - $paidCount;
         <div class="card-header bg-white py-3">
             <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between gap-2">
                 <div class="fw-semibold">Profissionais cadastrados</div>
-                <div class="text-md-end">
-                    <span class="badge bg-success-subtle text-success me-2">Pago</span>
-                    <span class="badge bg-warning-subtle text-warning">Pendente</span>
-                </div>
             </div>
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                 <tr>
-                    <th>Profissional</th>
-                    <th>Empresa</th>
-                    <th>Unidade</th>
-                    <th>CBO</th>
-                    <th class="text-end">Valor hora</th>
-                    <th class="text-end">Carga base</th>
-                    <th class="text-end">Horas extras</th>
-                    <th class="text-end">Horas faltas</th>
-                    <th class="text-end">Total mês</th>
+                    <th class="text-center">Profissional</th>
+                    <th class="text-center">Unidade</th>
+                    <th class="text-center">CBO</th>
+                    <th class="text-center">Base</th>
+                    <th class="text-center">Horas</th>
+                    <th class="text-center">Total mês</th>
                     <th class="text-center">Pagamento</th>
                     <th></th>
                 </tr>
@@ -186,15 +172,24 @@ $pendingCount = $totalProfessionals - $paidCount;
                     <?php foreach ($professionals as $professional): ?>
                         <?php $isPaid = $professional['payment_status'] === 'pago'; ?>
                         <tr class="<?= $isPaid ? 'table-success table-paid' : '' ?>">
-                            <td class="fw-semibold"><?= htmlspecialchars($professional['name']) ?></td>
-                            <td><?= htmlspecialchars($professional['company']) ?></td>
+                            <td>
+                                <div class="fw-semibold"><?= htmlspecialchars($professional['name']) ?></div>
+                                <div class="small text-muted"><?= htmlspecialchars($professional['company']) ?></div>
+                            </td>
                             <td><?= htmlspecialchars($professional['unit']) ?></td>
                             <td><?= htmlspecialchars($professional['cbo']) ?></td>
-                            <td class="text-end">R$ <?= number_format((float)$professional['hourly_rate'], 2, ',', '.') ?></td>
-                            <td class="text-end"><?= number_format((float)$professional['workload_hours'], 2, ',', '.') ?> h</td>
-                            <td class="text-end text-success">+<?= number_format((float)$professional['extra_hours'], 2, ',', '.') ?> h</td>
-                            <td class="text-end text-danger">-<?= number_format((float)$professional['missing_hours'], 2, ',', '.') ?> h</td>
-                            <td class="text-end fw-semibold"><?= number_format((float)$professional['total_hours'], 2, ',', '.') ?> h</td>
+                            <td class="text-end">
+                                <div><?= number_format((float)$professional['workload_hours'], 2, ',', '.') ?> h</div>
+                                <div class="small text-muted">R$ <?= number_format((float)$professional['hourly_rate'], 2, ',', '.') ?>/h</div>
+                            </td>
+                            <td class="text-end">
+                                <div class="text-success">+<?= number_format((float)$professional['extra_hours'], 2, ',', '.') ?> h</div>
+                                <div class="text-danger">-<?= number_format((float)$professional['missing_hours'], 2, ',', '.') ?> h</div>
+                            </td>
+                            <td class="text-end">
+                                <div><?= number_format((float)$professional['total_hours'], 2, ',', '.') ?> h</div>
+                                <div class="small text-muted">Valor Total: R$ <?= number_format(((float)$professional['hourly_rate']) * ((float)$professional['total_hours']), 2, ',', '.') ?></div>
+                            </td>
                             <td class="text-center">
                                 <form method="post" class="d-inline-flex align-items-center gap-2">
                                     <input type="hidden" name="action" value="update_payment_status">
